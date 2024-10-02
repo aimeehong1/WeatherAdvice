@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var imageName = ""
     @State private var adviceMessage = ""
     @State private var temp = ""
-    @FocusState private var isFocused: Bool
+    @FocusState private var textFieldIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -19,10 +19,10 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .fontWeight(.black)
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
                 .padding()
+                .frame(maxWidth: .infinity)
                 .background(.teal)
-                
+            
             Spacer()
             
             Image(imageName)
@@ -30,62 +30,68 @@ struct ContentView: View {
                 .scaledToFit()
                 .animation(.default, value: imageName)
             
+            Spacer()
+            
             Text(adviceMessage)
                 .font(.largeTitle)
                 .frame(height: 80)
                 .minimumScaleFactor(0.5)
                 .multilineTextAlignment(.center)
-                .animation(.default, value: adviceMessage)
+                .animation(.default, value: imageName)
             
             Spacer()
             
             HStack {
                 Text("What is the temp?")
-                    .font(.title)
                 
                 TextField("", text: $temp)
-                    .textFieldStyle(.roundedBorder)
+                    .focused($textFieldIsFocused)
                     .frame(width: 65)
-                    .onTapGesture {
-                        isFocused = true
-                    }
+                    .textFieldStyle(.roundedBorder)
                     .overlay {
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(.gray, lineWidth: 2)
                     }
                     .keyboardType(.numberPad)
+                    .onChange(of: textFieldIsFocused) {
+                        if textFieldIsFocused {
+                            adviceMessage = ""
+                            imageName = ""
+                            temp = ""
+                        }
+                    }
             }
             .font(.title)
             
             Button("Get Advice") {
                 giveAdvice()
+                textFieldIsFocused = false
             }
             .buttonStyle(.borderedProminent)
             .tint(.teal)
             .font(.title2)
-            
+            .disabled(temp.isEmpty)
         }
-        .padding()
     }
     
     func giveAdvice() {
-        guard let temp = Int(temp) else {
+        guard let tempInt = Int(temp) else {
             adviceMessage = "Please enter a valid temperature"
             return
         }
         
-        switch temp {
+        switch tempInt {
         case 76...:
-            adviceMessage = "It's Hot"
+            adviceMessage = "It's Hot!"
             imageName = "hot"
         case 63..<76:
-            adviceMessage = "Nice and mild"
+            adviceMessage = "Nice and mild!"
             imageName = "warm"
         case 45..<63:
-            adviceMessage = "You're going to need a sweater"
+            adviceMessage = "You're going to need a sweater!"
             imageName = "cool"
         case 33..<45:
-            adviceMessage = "You're going to need a coat"
+            adviceMessage = "You're going to need a coat!"
             imageName = "cold"
         default:
             adviceMessage = "Bundle up, it's freezing!"
